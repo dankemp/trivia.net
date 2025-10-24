@@ -1,0 +1,27 @@
+# server_config.json
+{
+  "port": 7777,
+  "players": 2,
+  "question_types": [
+    "Mathematics",
+    "Roman Numerals",
+    "Usable IP Addresses of a Subnet"
+  ],
+  "question_formats": {
+    "Mathematics": "What is {}?",
+    "Roman Numerals": "What is the decimal value of the roman numeral {}?",
+    "Usable IP Addresses of a Subnet": "How many usable addresses are there in the subnet {}?",
+    "Network and Broadcast Address of a Subnet": "What are the network and broadcast addresses of the subnet {}?"
+  },
+  "question_seconds": 10,
+  "question_interval_seconds": 2,
+  "ready_info": "Game starts in {question_interval_seconds} seconds!",
+  "question_word": "Question",
+  "correct_answer": "Correct! Your answer {answer} is right!",
+  "incorrect_answer": "Wrong! The correct answer is {correct_answer}, not {answer}",
+  "points_noun_singular": "point",
+  "points_noun_plural": "points",
+  "final_standings_heading": "Final standings:",
+  "one_winner": "The winner is: {}",
+  "multiple_winners": "The winners are: {}"
+}
