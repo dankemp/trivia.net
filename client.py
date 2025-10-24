@@ -10,15 +10,15 @@
 
 
 import json
-import requests
-import sys
 import socket
+import sys
+import threading
+import select
+import requests
 
 from pathlib import Path
 from typing import Any, Literal
 
-import threading
-import select
 from questions import *
 
 config = {}
@@ -314,19 +314,18 @@ def main():
     global config
 
     # pasrse arguments from sys.argv
-    if (len.sys.argv) < 2:
+    if len(sys.argv) < 2:
         if len(sys.argv) == 1 or not sys.argv[1].endswith('.json'):
-            print("client.py: Configuration not provided", file=sys.stderr)
+            print("client.py: Configuration not provided1", file=sys.stderr)
             sys.exit(1)
         config_path = sys.argv[1]
-    elif sys.argv == "--config":
+    elif sys.argv[1] == "--config":
         if len(sys.argv) < 3:
-            print("client.py: Configuration not provided", file=sys.stderr)
+            print("client.py: Configuration not provided2", file=sys.stderr)
             sys.exit(1)
         config_path = sys.argv[2]
     else:
-        print("client.py: Configuration not provided", file=sys.stderr)
-        sys.exit(1)
+        config_path = sys.argv[1]
 
     # load Configuration
     if not Path(config_path).exists():
