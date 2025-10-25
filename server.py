@@ -298,17 +298,8 @@ def end_round(is_last_round):
 
 
 def main():
-    # Your structure is as follows:
-    # 0. Load and validate the config. Start hosting immediately (bind to port, listen for connections)
-    # 1. Wait for the game to begin, that is, wait for 'players' (in the config) players to join
-    # 2. Send a READY message to all players
-    # 3. For each question type in the provided question types do the following:
-    #    a. Generate the question
-    #    b. Send the question to all connected players (not ones who have left)
-    #    c. Wait question_seconds seconds OR for every player to answer the question
-    #    d. Finish the round (behaviour is described in end_round)
 
-    # 0. Load and validate the config
+    #Load and validate the config
     if len(sys.argv) < 2 or sys.argv[1] != "--config":
         print("server.py: Configuration not provided", file=sys.stderr)
         sys.exit(1)
@@ -326,7 +317,8 @@ def main():
     with open(config_path) as f:
         config = json.load(f)
 
-    # Start hosting immediately (bind to port, listen for connections)
+    # start hosting
+    # bind to port, listen for connections
     try:
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -336,10 +328,9 @@ def main():
         print(f"server.py: Binding to port {config['port']} was unsuccessful", file=sys.stderr)
         sys.exit(1)
 
-    # 1. Wait for 'players' players to join
+    # Wait for players to join
     def handle_client_connection(client_sock):
         try:
-            # Wait for HI message
             data = client_sock.recv(4096)
             if not data:
                 client_sock.close()
@@ -378,27 +369,22 @@ def main():
         t.start()
         threads.append(t)
 
-    # Wait for all to join
     for t in threads:
         t.join()
 
-    # 2. Send a READY message to all players
     start_game()
 
-    # 3. For each question type...
+    # for each question type:
+    # generate question
+    # send question to all connected players
+    # wait question_seconds OR for every player to answer
+    # finish the round
     num_questions = len(config["question_types"])
     for i, question_type in enumerate(config["question_types"]):
         question_number = i + 1
         is_last = (i == num_questions - 1)
-
-        # a. Generate the question
-        # b. Send the question to all connected players
-        # c. Wait question_seconds OR for every player to answer
         start_round(question_number, question_type)
-
-        # d. Finish the round
         end_round(is_last)
-
     # Close all connections
     with players_lock:
         for sock in list(players.keys()):
