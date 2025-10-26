@@ -1,6 +1,6 @@
 {
   "port": 7777,
-  "players": 2,
+  "players": 1,
   "question_types": [
     "Mathematics",
     "Roman Numerals",
