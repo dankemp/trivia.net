@@ -43,7 +43,27 @@ def solve_mathematics_question(expression):
     Returns:
         String representation of the result (e.g., "6")
     """
-    return str(eval(expression))
+    # Parse and evaluate without using eval()
+    # Since we only have + and - operators (no precedence), evaluate left-to-right
+    tokens = expression.split()
+
+    # Start with first number
+    result = int(tokens[0])
+
+    # Process operators and operands
+    i = 1
+    while i < len(tokens):
+        operator = tokens[i]
+        operand = int(tokens[i + 1])
+
+        if operator == '+':
+            result += operand
+        elif operator == '-':
+            result -= operand
+
+        i += 2
+
+    return str(result)
 
 
 # ============================================================================
