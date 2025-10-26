@@ -20,10 +20,44 @@ fail_test() {
 }
 
 cleanup() {
-    # Kill any remaining server processes
-    pkill -f "python3 server.py" 2>/dev/null
-    pkill -f "python3 client.py" 2>/dev/null
-    sleep 0.5
+    # the specific server if PID is set
+    #this is done so we don't clean the currently running processes
+
+    if [ -n "$SERVER_PID" ]; then
+      kill -9 $SERVER_PID 2>/dev/null
+    fi
+
+    pkill -9 -f "nc localhost" 2>/dev/null
+
+    sleep 1
+}
+
+#helper to run nc without using timeout function
+run_nc(){
+  local timeout_sec=$1
+  shift
+
+  #run nc in the background, capture PID
+  "$@" &
+  local nc_pid=$!
+
+  #just having a simple sleep before was killing the program too quickly
+  #its important to have a variable sleep function
+
+
+  #wait for specified time or until nc finishes naturally
+
+  local count=0
+  while kill -0 $nc_pid 2>/dev/null && [ $count -lt $timeout_sec ]; do
+    sleep 1
+    ((count++))
+  done
+
+  #kill nc if its stil running
+  if kill -0 $nc_pid 2>/dev/null; then
+    kill $nc_pid 2>/dev/null
+    wait $nc_pid 2>/dev/null
+  fi
 }
 
 echo "SETUP: Creating Test Configurations"
@@ -92,7 +126,7 @@ sleep 0.5
 echo '{"message_type": "HI", "username": "TestPlayer"}' > tests/test_01_input.txt
 
 # Connect and send HI, capture output
-timeout 3 nc localhost 7778 < tests/test_01_input.txt > tests/test_01_output.txt 2>&1
+run_nc 3 nc localhost 7778 < tests/test_01_input.txt > tests/test_01_output.txt 2>&1
 
 # Check if READY message received
 if grep -q "READY" tests/test_01_output.txt && grep -q "Game starts" tests/test_01_output.txt; then
@@ -114,7 +148,7 @@ SERVER_PID=$!
 sleep 0.5
 
 # Send HI and wait for QUESTION
-echo '{"message_type": "HI", "username": "TestPlayer"}' | timeout 5 nc localhost 7778 > tests/test_02_output.txt 2>&1
+echo '{"message_type": "HI", "username": "TestPlayer"}' | run_nc 5 nc localhost 7778 > tests/test_02_output.txt 2>&1
 
 # Check if QUESTION message received
 if grep -q "QUESTION" tests/test_02_output.txt; then
@@ -141,7 +175,7 @@ cat > tests/test_03_input.txt << 'EOF'
 {"message_type": "ANSWER", "answer": "42"}
 EOF
 
-timeout 5 nc localhost 7778 < tests/test_03_input.txt > tests/test_03_output.txt 2>&1
+run_nc 5 nc localhost 7778 < tests/test_03_input.txt > tests/test_03_output.txt 2>&1
 sleep 0.5
 
 # Check if RESULT message received
@@ -169,7 +203,7 @@ cat > tests/test_04_input.txt << 'EOF'
 {"message_type": "ANSWER", "answer": "42"}
 EOF
 
-timeout 8 nc localhost 7778 < tests/test_04_input.txt > tests/test_04_output.txt 2>&1
+run_nc 8 nc localhost 7778 < tests/test_04_input.txt > tests/test_04_output.txt 2>&1
 
 # Check if FINISHED message received
 if grep -q "FINISHED" tests/test_04_output.txt && grep -q "Final standings" tests/test_04_output.txt; then
@@ -190,7 +224,7 @@ python3 server.py --config tests/server_test.json > /dev/null 2>&1 &
 SERVER_PID=$!
 sleep 0.5
 
-echo '{"message_type": "HI", "username": "TestPlayer"}' | timeout 3 nc localhost 7778 > tests/test_05_output.txt 2>&1
+echo '{"message_type": "HI", "username": "TestPlayer"}' | run_nc 3 nc localhost 7778 > tests/test_05_output.txt 2>&1
 
 # Parse JSON and check for required fields
 if grep -q '"message_type".*:.*"READY"' tests/test_05_output.txt && \

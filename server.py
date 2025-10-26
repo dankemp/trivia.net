@@ -299,6 +299,8 @@ def end_round(is_last_round):
 
 def main():
 
+    global config
+
     #Load and validate the config
     if len(sys.argv) < 2 or sys.argv[1] != "--config":
         print("server.py: Configuration not provided", file=sys.stderr)
@@ -314,8 +316,29 @@ def main():
         print(f"server.py: File {config_path} does not exist", file=sys.stderr)
         sys.exit(1)
 
-    with open(config_path) as f:
-        config = json.load(f)
+    #try to load the config
+    try:
+        with open(config_path) as f:
+            config = json.load(f)
+    except json.JSONDecodeError as e:
+        print(f"server.py: Invalid JSON in config file", file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        print(f"server.py: Error loading config: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    # Validate config has required fields
+    required_fields = [
+        "port", "players", "question_types", "question_formats",
+        "question_seconds", "question_interval_seconds", "ready_info",
+        "question_word", "correct_answer", "incorrect_answer",
+        "points_noun_singular", "points_noun_plural",
+        "final_standings_heading", "one_winner", "multiple_winners"
+    ]
+    for field in required_fields:
+        if field not in config:
+            print(f"server.py: Missing required field '{field}' in config", file=sys.stderr)
+            sys.exit(1)
 
     # start hosting
     # bind to port, listen for connections

@@ -1,1 +1,0 @@
-./run_tests_nc.sh: line 172: timeout: command not found
