@@ -189,6 +189,10 @@ def generate_usable_ip_addresses_question():
     return f"{ip}/{prefix_length}"
 
 
+# Alias for Ed compatibility
+generate_usable_addresses_question = generate_usable_ip_addresses_question
+
+
 def solve_usable_ip_addresses_question(cidr):
     """
     Calculate number of usable IP addresses in a subnet.
@@ -204,6 +208,10 @@ def solve_usable_ip_addresses_question(cidr):
     # Usable addresses = total - 2 (network and broadcast)
     usable = num_addresses - 2
     return str(usable)
+
+
+# Alias for Ed compatibility
+solve_usable_addresses_question = solve_usable_ip_addresses_question
 
 
 # ============================================================================
