@@ -318,8 +318,7 @@ def main():
     config_path = sys.argv[2]
 
     if not Path(config_path).exists():
-        print("server.py: Configuration not provided", file=sys.stderr)
-        #print(f"server.py: File {config_path} does not exist", file=sys.stderr)
+        print(f"server.py: File {config_path} does not exist", file=sys.stderr)
         sys.exit(1)
 
     #try to load the config
