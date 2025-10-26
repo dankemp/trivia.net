@@ -51,3 +51,11 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Test outputs and debug files
+tests/*.txt
+debug_*.sh
+debug_*.txt
+test_*.py
+test_*.sh
+manual_*.sh

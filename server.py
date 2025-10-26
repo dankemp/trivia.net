@@ -387,16 +387,13 @@ def main():
 
     # Accept players
     threads = []
-    while True:
-        with players_lock:
-            if len(players) >= config["players"]:
-                break
-
+    for _ in range(config["players"]):
         client_sock, addr = server_socket.accept()
         t = threading.Thread(target=handle_client_connection, args=(client_sock,))
         t.start()
         threads.append(t)
 
+    # Wait for all connection handler threads to finish
     for t in threads:
         t.join()
 
