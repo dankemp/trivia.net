@@ -29,8 +29,8 @@ current_question_type = None
 
 
 def encode_message(message: dict[str, Any]) -> bytes:
-    # encode data - no newline for client
-    return json.dumps(message).encode('utf-8')
+    # encode data with newline delimiter
+    return (json.dumps(message) + '\n').encode('utf-8')
 
 
 def decode_message(message: bytes) -> dict[str, Any]:
