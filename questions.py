@@ -10,6 +10,8 @@ Both server and client import from this module.
 
 import random
 import ipaddress
+import ast
+import operator
 
 
 # ============================================================================
