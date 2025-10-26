@@ -34,7 +34,7 @@ def encode_message(message: dict[str, Any]) -> bytes:
 
 
 def decode_message(message: bytes) -> dict[str, Any]:
-    # decode message recieved from server
+    # decode message received from server
     return json.loads(message.decode('utf-8').strip())
 
 
@@ -81,7 +81,7 @@ def disconnect(client_socket):
     try:
         bye_msg = {"message_type": "BYE"}
         client_socket.sendall(encode_message(bye_msg))
-    except:
+    except (socket.error, OSError):
         pass
     client_socket.close()
 
@@ -117,11 +117,11 @@ def answer_question(
         # Use Ollama
         return answer_question_ollama(question)
 
-    return " "
+    return ""
 
 
 def solve_question_auto(question_type: str, short_question: str) -> str:
-    # helper function to solve quesitons in auto mode
+    # helper function to solve questions in auto mode
 
     solvers = {
         "Mathematics": solve_mathematics_question,
@@ -217,7 +217,7 @@ def handle_command(command: str):
                     hostname = host_port[0]
                     port = int(host_port[1])
 
-                    slient_socket = connect(hostname, port)
+                    client_socket = connect(hostname, port)
                     connected = True
 
                     # then start server message handler threading
@@ -313,15 +313,13 @@ def main():
 
     global config
 
-    # pasrse arguments from sys.argv
+    # parse arguments from sys.argv
     if len(sys.argv) < 2:
-        if len(sys.argv) == 1 or not sys.argv[1].endswith('.json'):
-            print("client.py: Configuration not provided1", file=sys.stderr)
-            sys.exit(1)
-        config_path = sys.argv[1]
+        print("client.py: Configuration not provided", file=sys.stderr)
+        sys.exit(1)
     elif sys.argv[1] == "--config":
         if len(sys.argv) < 3:
-            print("client.py: Configuration not provided2", file=sys.stderr)
+            print("client.py: Configuration not provided", file=sys.stderr)
             sys.exit(1)
         config_path = sys.argv[2]
     else:
