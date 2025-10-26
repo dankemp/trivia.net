@@ -315,7 +315,12 @@ def main():
         print("server.py: Configuration not provided", file=sys.stderr)
         sys.exit(1)
 
+
+
     config_path = sys.argv[2]
+
+    if not config_path.endswith(".json"):
+        print("server.py: Configuration not provided", file=sys.stderr)
 
     if not Path(config_path).exists():
         print(f"server.py: File {config_path} does not exist", file=sys.stderr)
