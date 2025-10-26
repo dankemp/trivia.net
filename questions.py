@@ -10,6 +10,8 @@ Both server and client import from this module.
 
 import random
 import ipaddress
+import ast
+import operator
 
 
 # ============================================================================
@@ -43,7 +45,32 @@ def solve_mathematics_question(expression):
     Returns:
         String representation of the result (e.g., "6")
     """
-    return str(eval(expression))
+    allowed_ops = {
+        ast.Add: operator.add,
+        ast.Sub: operator.sub,
+        ast.Mult: operator.mul,
+        ast.Div: operator.truediv,
+        ast.FloorDiv: operator.floordiv,
+        ast.Mod: operator.mod,
+        ast.Pow: operator.pow,
+        ast.USub: operator.neg,  # unary minus
+        ast.UAdd: operator.pos  # unary plus
+    }
+
+    def _eval(node):
+        if isinstance(node, ast.Num):  # <number>
+            return node.n
+        elif isinstance(node, ast.BinOp):  # <left> <op> <right>
+            if type(node.op) in allowed_ops:
+                return allowed_ops[type(node.op)](_eval(node.left), _eval(node.right))
+        elif isinstance(node, ast.UnaryOp):  # + or - before a number
+            if type(node.op) in allowed_ops:
+                return allowed_ops[type(node.op)](_eval(node.operand))
+        raise ValueError("Unsupported expression")
+
+    parsed = ast.parse(expression, mode='eval')
+    result = _eval(parsed.body)
+    return str(result)
 
 
 # ============================================================================
