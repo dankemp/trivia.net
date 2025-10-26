@@ -101,7 +101,7 @@ def handle_player_answer(client_socket):
         with players_lock:
             if client_socket in players:
                 players[client_socket]["answered"] = True
-    except Exception:
+    except (socket.error, OSError, json.JSONDecodeError, KeyError):
         remove_player(client_socket)
 
 
@@ -114,7 +114,7 @@ def send_to_all_players(message_dict):
             if not data["disconnected"]:
                 try:
                     sock.sendall(message_bytes)
-                except Exception:
+                except (socket.error, OSError):
                     data["disconnected"] = True
 
 
@@ -142,8 +142,13 @@ def receive_answers():
                 break
         time.sleep(0.1)
 
-    # Give threads a moment to finish
-    time.sleep(0.2)
+    # Properly join all threads with remaining timeout
+    remaining_time = config["question_seconds"] - (time.time() - start_time)
+    for t in threads:
+        if remaining_time > 0:
+            t.join(timeout=max(0.1, remaining_time))
+        else:
+            t.join(timeout=0.1)
 
 
 def generate_leaderboard_state() -> str:
@@ -372,12 +377,12 @@ def main():
                     for sock in list(players.keys()):
                         try:
                             sock.close()
-                        except:
+                        except (socket.error, OSError):
                             pass
                 sys.exit(0)
 
             add_player(client_sock, username)
-        except Exception:
+        except (socket.error, OSError, json.JSONDecodeError, KeyError):
             client_sock.close()
 
     # Accept players
@@ -413,7 +418,7 @@ def main():
         for sock in list(players.keys()):
             try:
                 sock.close()
-            except:
+            except (socket.error, OSError):
                 pass
 
     server_socket.close()
