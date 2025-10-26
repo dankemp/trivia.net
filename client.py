@@ -220,8 +220,14 @@ def handle_command(command: str):
                     client_socket = connect(hostname, port)
                     connected = True
 
-                    # then start server message handler threading
+                    # Send HI message immediately after connecting
+                    hi_msg = {
+                        "message_type": "HI",
+                        "username": config["username"]
+                    }
+                    send_message(client_socket, hi_msg)
 
+                    # then start server message handler threading
                     server_thread = threading.Thread(target=handle_server_messages, daemon=True)
                     server_thread.start()
 
