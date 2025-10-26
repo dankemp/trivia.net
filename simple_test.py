@@ -13,12 +13,12 @@ def test_server():
     try:
         # Connect
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect(('localhost', 8888))
+        sock.connect(('localhost', 7777))
         print("✓ Connected to server")
 
         # Send HI
         hi_msg = json.dumps({"message_type": "HI", "username": "TestPlayer"})
-        sock.sendall(hi_msg.encode('utf-8'))
+        sock.sendall((hi_msg + '\n').encode('utf-8'))
         print(f"✓ Sent: {hi_msg}")
 
         # Receive response (newline delimited)
