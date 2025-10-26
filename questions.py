@@ -9,7 +9,55 @@ Both server and client import from this module.
 """
 
 import random
-import ipaddress
+
+
+# ============================================================================
+# IP ADDRESS HELPER FUNCTIONS
+# ============================================================================
+
+def ip_to_int(ip_str):
+    """Convert IP address string to 32-bit integer."""
+    octets = ip_str.split('.')
+    return (int(octets[0]) << 24) + (int(octets[1]) << 16) + \
+           (int(octets[2]) << 8) + int(octets[3])
+
+
+def int_to_ip(ip_int):
+    """Convert 32-bit integer to IP address string."""
+    return f"{(ip_int >> 24) & 0xFF}.{(ip_int >> 16) & 0xFF}." \
+           f"{(ip_int >> 8) & 0xFF}.{ip_int & 0xFF}"
+
+
+def parse_cidr(cidr):
+    """
+    Parse CIDR notation and return network address, broadcast address, and host count.
+
+    Args:
+        cidr: String like "192.168.1.37/24"
+
+    Returns:
+        Tuple of (network_addr_str, broadcast_addr_str, num_addresses)
+    """
+    ip_str, prefix_str = cidr.split('/')
+    prefix_length = int(prefix_str)
+
+    # Convert IP to integer
+    ip_int = ip_to_int(ip_str)
+
+    # Calculate subnet mask
+    # For /24: 11111111.11111111.11111111.00000000 = 0xFFFFFF00
+    mask = (0xFFFFFFFF << (32 - prefix_length)) & 0xFFFFFFFF
+
+    # Calculate network address (IP AND mask)
+    network_int = ip_int & mask
+
+    # Calculate broadcast address (network OR inverted mask)
+    broadcast_int = network_int | (~mask & 0xFFFFFFFF)
+
+    # Total number of addresses in subnet
+    num_addresses = 2 ** (32 - prefix_length)
+
+    return (int_to_ip(network_int), int_to_ip(broadcast_int), num_addresses)
 
 
 # ============================================================================
@@ -152,9 +200,9 @@ def solve_usable_ip_addresses_question(cidr):
         String representation of usable addresses (e.g., "254")
         Usable = Total - 2 (network and broadcast addresses)
     """
-    network = ipaddress.IPv4Network(cidr, strict=False)
+    _, _, num_addresses = parse_cidr(cidr)
     # Usable addresses = total - 2 (network and broadcast)
-    usable = network.num_addresses - 2
+    usable = num_addresses - 2
     return str(usable)
 
 
@@ -185,9 +233,7 @@ def solve_network_broadcast_question(cidr):
         String in format "network_addr and broadcast_addr"
         (e.g., "192.168.1.0 and 192.168.1.255")
     """
-    network = ipaddress.IPv4Network(cidr, strict=False)
-    network_addr = str(network.network_address)
-    broadcast_addr = str(network.broadcast_address)
+    network_addr, broadcast_addr, _ = parse_cidr(cidr)
     return f"{network_addr} and {broadcast_addr}"
 
 
