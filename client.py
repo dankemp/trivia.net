@@ -15,7 +15,6 @@ import sys
 import threading
 import select
 import time
-from socket import socket
 
 import requests
 
@@ -62,7 +61,7 @@ def receive_message(socket_socket) -> dict[str, Any] | None:
     return decode_message(data)
 
 
-def connect(hostname: str, port: int) -> socket:
+def connect(hostname: str, port: int) -> socket.socket:
 
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
