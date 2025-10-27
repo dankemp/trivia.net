@@ -270,6 +270,32 @@ def solve_network_broadcast_question(cidr):
     network_addr, broadcast_addr, _ = parse_cidr(cidr)
     return f"{network_addr} and {broadcast_addr}"
 
+def parse_cidr(cidr):
+
+    try:
+        ip_str, prefix_str = cidr.split('/')
+    except ValueError:
+        print("Invalid cidr: " + cidr)
+        return
+    prefix_length = int(prefix_str)
+
+    # Convert IP to integer
+    ip_int = ip_to_int(ip_str)
+
+    # Calculate subnet mask
+    # For /24: 11111111.11111111.11111111.00000000 = 0xFFFFFF00
+    mask = (0xFFFFFFFF << (32 - prefix_length)) & 0xFFFFFFFF
+
+    # Calculate network address (IP AND mask)
+    network_int = ip_int & mask
+
+    # Calculate broadcast address (network OR inverted mask)
+    broadcast_int = network_int | (~mask & 0xFFFFFFFF)
+
+    # Total number of addresses in subnet
+    num_addresses = 2 ** (32 - prefix_length)
+
+    return (int_to_ip(network_int), int_to_ip(broadcast_int), num_addresses)
 
 def start_game():
     # Send a READY message
