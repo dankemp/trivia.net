@@ -454,6 +454,7 @@ def main():
             if not username.isalnum():
                 client_sock.close()
                 return
+            '''
             if not validate_username(username):
                 with players_lock:
                     for sock in list(players.keys()):
@@ -462,6 +463,7 @@ def main():
                         except (socket.error, OSError):
                             pass
                 sys.exit(0)
+            '''
 
             add_player(client_sock, username)
         except Exception:
