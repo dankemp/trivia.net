@@ -38,7 +38,12 @@ def parse_cidr(cidr):
     Returns:
         Tuple of (network_addr_str, broadcast_addr_str, num_addresses)
     """
-    ip_str, prefix_str = cidr.split('/')
+    #print("cidr tttttttttt: " + cidr)
+    try:
+        ip_str, prefix_str = cidr.split('/')
+    except ValueError:
+        print("Invalid cidr: " + cidr)
+        return
     prefix_length = int(prefix_str)
 
     # Convert IP to integer
@@ -161,6 +166,8 @@ def solve_roman_numerals_question(roman):
 
     # Process right to left
     for char in reversed(roman):
+        if char not in values:
+            continue
         value = values[char]
         if value < prev_value:
             # Subtractive notation (like IV = 4)
