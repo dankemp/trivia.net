@@ -1,4 +1,0 @@
-CONNECT localhost:8001
-42
-DISCONNECT
-EXIT
