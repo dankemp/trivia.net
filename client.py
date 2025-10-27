@@ -12,7 +12,6 @@
 import json
 import socket
 import sys
-import time
 import threading
 import select
 import time
@@ -33,25 +32,20 @@ server_thread = None  # Store thread reference for proper joining
 
 
 def encode_message(message: dict[str, Any]) -> bytes:
-    # encode data with newline delimiter
     return (json.dumps(message) + '\n').encode('utf-8')
 
 
 def decode_message(message: bytes) -> dict[str, Any]:
-    # decode message received from server
     return json.loads(message.decode('utf-8').strip())
 
 
 def send_message(client_socket, data: dict[str, Any]):
     # Use encode_message
-    # Send data across the socket
     client_socket.sendall(encode_message(data))
 
 
 def receive_message(socket_socket) -> dict[str, Any] | None:
-    # Use decode_message
-    # Receive data from the socket, and
-    # return the data decoded
+
     data = b""
     while True:
         chunk = socket_socket.recv(1)
@@ -68,8 +62,7 @@ def receive_message(socket_socket) -> dict[str, Any] | None:
 
 
 def connect(hostname: str, port: int) -> socket.socket:
-    # Connect to the server socket
-    # Then, send your HI message!
+
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((hostname, port))
@@ -80,8 +73,7 @@ def connect(hostname: str, port: int) -> socket.socket:
 
 
 def disconnect(client_socket):
-    # Disconnect from the server socket
-    # Then, send your BYE message!
+
     try:
         bye_msg = {"message_type": "BYE"}
         client_socket.sendall(encode_message(bye_msg))
@@ -125,35 +117,21 @@ def answer_question(
 
 
 def solve_question_auto(question_type: str, short_question: str) -> str:
-    # helper function to solve questions in auto mode
 
     solvers = {
         "Mathematics": solve_mathematics_question(short_question),
         "Roman Numerals": solve_roman_numerals_question(short_question),
-        "Usable IP Addresses of a Subnet": solve_usable_ip_addresses_question(short_question),
+        "Usable IP Addresses of a Subnet": solve_usable_addresses_question(short_question),
         "Network and Broadcast Address of a Subnet": solve_network_broadcast_question(short_question),
     }
 
     return solvers[question_type](short_question)
 
 def answer_question_ollama(question: str) -> str:
-    # Use requests here!
-    """
-        Use requests to get answer from Ollama.
 
-        This function sends the question to Ollama's /api/chat endpoint
-        and returns the AI-generated answer.
-
-        Args:
-            question: The full trivia question text
-
-        Returns:
-            The answer as a string, or empty string if error/timeout
-        """
     global config, current_time_limit
 
     try:
-        # Get Ollama configuration
         ollama_config = config["ollama_config"]
         url = f"http://{ollama_config['ollama_host']}:{ollama_config['ollama_port']}/api/chat"
 
@@ -166,44 +144,33 @@ def answer_question_ollama(question: str) -> str:
                     "content": f"Answer this trivia question with just the answer, no explanation: {question}"
                 }
             ],
-            "stream": False  # Don't stream, get complete response
+            "stream": False
         }
 
-        # Send POST request to Ollama with timeout
         response = requests.post(url, json=payload, timeout=current_time_limit)
 
-        # Check if request was successful
         if response.status_code != 200:
             return ""
 
         # Parse JSON response
         result = response.json()
 
-        # Extract answer from response
-        # Ollama returns: {"message": {"content": "answer here"}}
         answer = result["message"]["content"].strip()
 
         return answer
 
     except requests.exceptions.Timeout:
-        # Ollama took too long to respond
         return ""
     except requests.exceptions.ConnectionError:
-        # Ollama is not running or unreachable
         return ""
     except (KeyError, json.JSONDecodeError):
-        # Response format is unexpected
         return ""
     except Exception:
-        # Any other error
         return ""
 
 
 def handle_command(command: str):
-    # Handle behaviour for sending the following messages:
-    # CONNECT <host>:<port>
-    # DISCONNECT
-    # EXIT
+
 
     global client_socket, ConnectionAbortedError, connected, server_thread
 
@@ -239,14 +206,11 @@ def handle_command(command: str):
                     server_thread.start()
                     time.sleep(0.1)
 
-                    # Give thread time to start and receive first messages
-                    # Wait longer than question_interval_seconds to ensure QUESTION arrives
                     time.sleep(1.5)
 
     elif command == "DISCONNECT":
         if connected and client_socket:
             disconnect(client_socket)
-            # Wait for server thread to finish processing messages
             if server_thread and server_thread.is_alive():
                 time.sleep(0.1)  # Give time for any pending messages
                 server_thread.join(timeout=2)
@@ -254,12 +218,7 @@ def handle_command(command: str):
 
 
 def handle_received_message(message: dict[str, Any]):
-    # Messages you have to handle (only while connected to a server):
-    # READY
-    # QUESTION
-    # RESULT
-    # LEADERBOARD
-    # FINISHED
+
 
     global client_socket, connected, current_time_limit, current_question_type, config
 
@@ -277,14 +236,12 @@ def handle_received_message(message: dict[str, Any]):
         current_time_limit = message["time_limit"]
         current_question_type = message["question_type"]
 
-        # Get answer using answer_question function
         answer = answer_question(
             question=message["trivia_question"],
             short_question=message["short_question"],
             client_mode=config["client_mode"]
         )
 
-        # Send answer if we got one (not empty due to timeout)
         if answer:
             answer_msg = {
                 "message_type": "ANSWER",
@@ -308,8 +265,6 @@ def handle_received_message(message: dict[str, Any]):
             client_socket.close()
         except:
             pass
-        # Don't call sys.exit here - let the thread return gracefully
-
 
 def handle_server_messages():
     # handle incoming messages from server in a separate threading
@@ -327,8 +282,8 @@ def handle_server_messages():
                     client_socket.close()
                 except:
                     pass
-                sys.stdout.flush()  # Ensure all output is written
-                return  # Exit thread gracefully, don't call sys.exit!
+                sys.stdout.flush()
+                return
 
             handle_received_message(message)
             sys.stdout.flush()  # Flush after each message
@@ -340,8 +295,8 @@ def handle_server_messages():
                 client_socket.close()
             except:
                 pass
-        sys.stdout.flush()  # Ensure all output is written
-        return  # Exit thread gracefully, don't call sys.exit!
+        sys.stdout.flush()
+        return
 
 
 def main():
@@ -385,16 +340,12 @@ def main():
 
     try:
         while True:
-            # Only read commands when NOT connected
-            # When connected, the server thread handles everything including reading answers
             if not connected:
                 user_input = input()
                 handle_command(user_input)
             else:
-                # Wait for server thread to finish (game ends or disconnects)
                 if server_thread and server_thread.is_alive():
                     server_thread.join()
-                # After thread finishes, continue reading commands
     except (EOFError, KeyboardInterrupt):
         if connected and client_socket:
             disconnect(client_socket)
