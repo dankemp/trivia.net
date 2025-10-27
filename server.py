@@ -203,10 +203,10 @@ def generate_question_answer(question_type: str, short_question: str) -> str:
     # The answer depends on the question type
 
     solvers = {
-        "Mathematics": solve_mathematics_question,
-        "Roman Numerals": solve_roman_numerals_question,
-        "Usable IP Addresses of a Subnet": solve_usable_ip_addresses_question,
-        "Network and Broadcast Address of a Subnet": solve_network_broadcast_question
+        "Mathematics": solve_mathematics_question(short_question),
+        "Roman Numerals": solve_roman_numerals_question(short_question),
+        "Usable IP Addresses of a Subnet": solve_usable_ip_addresses_question(short_question),
+        "Network and Broadcast Address of a Subnet": solve_network_broadcast_question(short_question)
     }
 
     return solvers[question_type]
