@@ -203,7 +203,6 @@ def generate_question_answer(question_type: str, short_question: str) -> str:
     # The answer depends on the question type
 
     solvers = {
-        #"Mathematics": solve_mathematics_question,
         "Mathematics": solve_mathematics_question,
         "Roman Numerals": solve_roman_numerals_question,
         "Usable IP Addresses of a Subnet": solve_usable_addresses_question,
@@ -211,6 +210,27 @@ def generate_question_answer(question_type: str, short_question: str) -> str:
     }
 
     return solvers[question_type](short_question)
+
+
+def solve_mathematics_question(expression):
+
+    tokens = expression.split()
+
+    result = int(tokens[0])
+
+    i = 1
+    while i < len(tokens):
+        operator = tokens[i]
+        operand = int(tokens[i + 1])
+
+        if operator == '+':
+            result += operand
+        elif operator == '-':
+            result -= operand
+
+        i += 2
+
+    return str(result)
 
 
 def start_game():
