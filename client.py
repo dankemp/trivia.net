@@ -14,6 +14,8 @@ import socket
 import sys
 import threading
 import select
+import time
+
 import requests
 
 from pathlib import Path
@@ -230,6 +232,7 @@ def handle_command(command: str):
                     # then start server message handler threading
                     server_thread = threading.Thread(target=handle_server_messages, daemon=True)
                     server_thread.start()
+                    time.sleep(0.1)
 
     elif command == "DISCONNECT":
         if connected and client_socket:

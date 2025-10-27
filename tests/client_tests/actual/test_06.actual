@@ -1,1 +1,1 @@
-Connection failed
+./tests/client_tests/run_client_tests.sh: line 262: /usr/bin/timeout: No such file or directory
