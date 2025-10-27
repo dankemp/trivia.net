@@ -190,7 +190,7 @@ def handle_command(command: str):
                     hostname = host_port[0]
                     port = int(host_port[1])
 
-                    client_socket: socket = connect(hostname, port)
+                    client_socket = connect(hostname, port)
                     connected = True
 
                     # Send HI message immediately after connecting
