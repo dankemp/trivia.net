@@ -459,6 +459,7 @@ def main():
     def handle_client_connection(client_sock):
         client_sock.settimeout(5.0)
         try:
+            client_sock.settimeout(5.0)
             data = client_sock.recv(4096)
             if not data:
                 client_sock.close()
@@ -489,7 +490,6 @@ def main():
             add_player(client_sock, username)
         except Exception as e:
             print(f"DEBUG: Error in handle_client_connection: {e}", file=sys.stderr)
-
             #print(f"Error adding player: {e}", file=sys.stderr)
             client_sock.close()
 
