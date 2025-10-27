@@ -329,7 +329,7 @@ def main():
             sys.exit(1)
         config_path = sys.argv[2]
     else:
-        print("server.py: Configuration not provided", file=sys.stderr)
+        print("client.py: Configuration not provided", file=sys.stderr)
         sys.exit(1)
 
     # load Configuration
