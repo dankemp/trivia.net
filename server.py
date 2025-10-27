@@ -69,7 +69,17 @@ def handle_player_answer(client_socket):
 
         if message.get("message_type") == "BYE":
             remove_player(client_socket)
-            return
+            result_msg = {
+                "message_type": "BYE"''',
+                
+                "answer": is_correct,
+                "feedback": feedback
+                '''
+            }
+
+            # Send only to this client
+            json_string = json.dumps(result_msg) + "\n"
+            client_socket.sendall(json_string.encode('utf-8'))
 
         if message.get("message_type") == "ANSWER":
             player_answer = message["answer"]
