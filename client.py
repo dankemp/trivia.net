@@ -323,16 +323,14 @@ def main():
     if len(sys.argv) < 2:
         print("client.py: Configuration not provided", file=sys.stderr)
         sys.exit(1)
-    elif sys.argv[1] != "--config" and sys.argv[2] != "--config":
-        print("server.py: Configuration not provided", file=sys.stderr)
-        sys.exit(1)
     elif sys.argv[1] == "--config":
         if len(sys.argv) < 3:
             print("client.py: Configuration not provided", file=sys.stderr)
             sys.exit(1)
         config_path = sys.argv[2]
     else:
-        config_path = sys.argv[1]
+        print("server.py: Configuration not provided", file=sys.stderr)
+        sys.exit(1)
 
     # load Configuration
     if not Path(config_path).exists():
