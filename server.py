@@ -494,23 +494,28 @@ def main():
     for t in threads:
         t.join()
 
-    start_game()
+    try:
+        start_game()
 
-    num_questions = len(config["question_types"])
-    for i, question_type in enumerate(config["question_types"]):
-        question_number = i + 1
-        is_last = (i == num_questions - 1)
-        start_round(question_number, question_type)
-        end_round(is_last)
-    # Close all connections
-    with players_lock:
-        for sock in list(players.keys()):
-            try:
-                sock.close()
-            except (socket.error, OSError):
-                pass
+        num_questions = len(config["question_types"])
 
-    server_socket.close()
+        for i, question_type in enumerate(config["question_types"]):
+            question_number = i + 1
+            is_last = (i == num_questions - 1)
+            start_round(question_number, question_type)
+            end_round(is_last)
+    except Exception as e:
+        print(f"DEBUG: Error in game loop: {e}", file=sys.stderr)
+    finally:
+        # Close all connections
+        with players_lock:
+            for sock in list(players.keys()):
+                try:
+                    sock.close()
+                except (socket.error, OSError):
+                    pass
+
+        server_socket.close()
 
 
 if __name__ == "__main__":
