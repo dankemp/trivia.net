@@ -112,7 +112,6 @@ def answer_question(
 
     elif client_mode == "ai":
         # Use Ollama
-        global current_time_limit
 
         try:
             return answer_question_ollama(question)
