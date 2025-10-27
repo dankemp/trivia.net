@@ -28,7 +28,7 @@ client_socket = None
 connected: bool = False
 current_time_limit: int = 0
 current_question_type = ""
-server_thread = None  # Store thread reference for proper joining
+server_thread = None
 
 
 def encode_message(message: dict[str, Any]) -> bytes:
@@ -135,7 +135,6 @@ def answer_question_ollama(question: str) -> str:
         ollama_config = config["ollama_config"]
         url = f"http://{ollama_config['ollama_host']}:{ollama_config['ollama_port']}/api/chat"
 
-        # Prepare the request payload
         payload = {
             "model": ollama_config["ollama_model"],
             "messages": [
@@ -177,7 +176,6 @@ def handle_command(command: str):
     if command == "EXIT":
         if connected and client_socket:
             disconnect(client_socket)
-            # Wait for server thread to finish processing messages
             if server_thread and server_thread.is_alive():
                 server_thread.join(timeout=2)
         sys.exit(0)
@@ -201,7 +199,6 @@ def handle_command(command: str):
                     }
                     send_message(client_socket, hi_msg)
 
-                    # Start server message handler thread (NON-DAEMON for proper joining)
                     server_thread = threading.Thread(target=handle_server_messages, daemon=False)
                     server_thread.start()
 
@@ -209,7 +206,7 @@ def handle_command(command: str):
         if connected and client_socket:
             disconnect(client_socket)
             if server_thread and server_thread.is_alive():
-                time.sleep(0.1)  # Give time for any pending messages
+                time.sleep(0.1)
                 server_thread.join(timeout=2)
             sys.exit(0)
 
@@ -229,7 +226,6 @@ def handle_received_message(message: dict[str, Any]):
         print(message["trivia_question"])
         sys.stdout.flush()
 
-        # Store time limit and question type for answer function
         current_time_limit = message["time_limit"]
         current_question_type = message["question_type"]
 
@@ -264,7 +260,6 @@ def handle_received_message(message: dict[str, Any]):
             pass
 
 def handle_server_messages():
-    # handle incoming messages from server in a separate threading
 
     global client_socket, connected
 
@@ -286,7 +281,6 @@ def handle_server_messages():
             sys.stdout.flush()  # Flush after each message
 
     except Exception as e:
-        # Handle exceptions without killing entire program
         if connected:
             try:
                 client_socket.close()
@@ -297,13 +291,6 @@ def handle_server_messages():
 
 
 def main():
-    # The client consists of few parts compared to the server:
-    # Parsing and loading config files
-    # Connecting, disconnecting and exiting
-    # Responding to normal messages (CONNECT, DISCONNECT, EXIT)
-    # Responding to server messages (READY, QUESTION, RESULT, LEADERBOARD, FINISHED)
-    # Answer questions depending on the mode ('you', 'auto' or 'ai')
-
     global config
 
     # parse arguments from sys.argv
@@ -319,7 +306,6 @@ def main():
         print("client.py: Configuration not provided", file=sys.stderr)
         sys.exit(1)
 
-    # load Configuration
     if not Path(config_path).exists():
         print(f"client.py: File {config_path} does not exist", file=sys.stderr)
         sys.exit(1)
@@ -327,13 +313,10 @@ def main():
     with open(config_path) as f:
         config = json.load(f)
 
-    # check Ollama config
     if config.get("client_mode") == 'ai':
         if not config.get("ollama_config"):
             print("client.py: Missing values for Ollama configuration", file=sys.stderr)
             sys.exit(1)
-
-    # handle user input
 
     try:
         while True:
