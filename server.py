@@ -69,17 +69,21 @@ def handle_player_answer(client_socket):
 
         if message.get("message_type") == "BYE":
             remove_player(client_socket)
+            return
+
+            '''
             result_msg = {
-                "message_type": "BYE"''',
+                "message_type": "BYE",
                 
                 "answer": is_correct,
                 "feedback": feedback
-                '''
+                
             }
 
             # Send only to this client
             json_string = json.dumps(result_msg) + "\n"
             client_socket.sendall(json_string.encode('utf-8'))
+            '''
 
         if message.get("message_type") == "ANSWER":
             player_answer = message["answer"]
@@ -477,21 +481,6 @@ def main():
                 return
 
             username = message["username"]
-            '''
-            # Check alphanumeric
-            if not username.isalnum():
-                client_sock.close()
-                return
-            
-            if not validate_username(username):
-                with players_lock:
-                    for sock in list(players.keys()):
-                        try:
-                            sock.close()
-                        except (socket.error, OSError):
-                            pass
-                sys.exit(0)
-            '''
 
             add_player(client_sock, username)
         except Exception as e:
