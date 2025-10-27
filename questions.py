@@ -176,7 +176,7 @@ def solve_roman_numerals_question(roman):
 # USABLE IP ADDRESSES QUESTIONS
 # ============================================================================
 
-def generate_usable_ip_addresses_question():
+def generate_usable_addresses_question():
     """
     Generate a random subnet in CIDR notation.
     Returns a string like "192.168.1.0/24".
@@ -190,7 +190,7 @@ def generate_usable_ip_addresses_question():
 
 
 # Alias for Ed compatibility
-generate_usable_addresses_question = generate_usable_ip_addresses_question
+#generate_usable_addresses_question = generate_usable_ip_addresses_question
 
 
 def solve_usable_ip_addresses_question(cidr):
