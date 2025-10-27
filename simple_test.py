@@ -1,8 +1,4 @@
-#!/usr/bin/env python3
-"""
-Simple test to verify server works
-Run this while server is running
-"""
+
 
 import socket
 import json
@@ -13,7 +9,7 @@ def test_server():
     try:
         # Connect
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect(('localhost', 7777))
+        sock.connect(('localhost', 7778))
         print("✓ Connected to server")
 
         # Send HI

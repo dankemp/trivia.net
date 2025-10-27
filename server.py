@@ -16,12 +16,18 @@ from pathlib import Path
 from typing import Any
 
 import threading
+
 from questions import *
 
 players = {}
 players_lock = threading.Lock()
 config = {}
 current_correct_answer = None
+
+import re
+
+def validate_username(username):
+    return bool(re.match(r'^[a-zA-Z0-9]+$', username))
 
 
 # Most of these functions have no arguments.
@@ -75,7 +81,6 @@ def handle_player_answer(client_socket):
                     if is_correct:
                         players[client_socket]["score"] += 1
 
-            # Send RESULT
             if is_correct:
                 feedback = config["correct_answer"]
             else:
@@ -119,21 +124,19 @@ def send_to_all_players(message_dict):
 
 
 def receive_answers():
-    # Wait for the players to send their answers
     with players_lock:
         active_sockets = [sock for sock, data in players.items() if not data["disconnected"]]
         # Reset answered flags
         for data in players.values():
             data["answered"] = False
 
-    # Create threads to handle each player's answer
+    # Create threads
     threads = []
     for sock in active_sockets:
         t = threading.Thread(target=handle_player_answer, args=(sock,))
         t.start()
         threads.append(t)
 
-    # Wait for timeout or all answers
     start_time = time.time()
     while time.time() - start_time < config["question_seconds"]:
         with players_lock:
@@ -142,7 +145,6 @@ def receive_answers():
                 break
         time.sleep(0.1)
 
-    # Properly join all threads with remaining timeout
     remaining_time = config["question_seconds"] - (time.time() - start_time)
     for t in threads:
         if remaining_time > 0:
@@ -152,19 +154,15 @@ def receive_answers():
 
 
 def generate_leaderboard_state() -> str:
-    # The 'state' for a LEADERBOARD message
     with players_lock:
-        # Get active players only
         active_players = [
             (data["username"], data["score"])
             for sock, data in players.items()
             if not data["disconnected"]
         ]
 
-    # Sort by score (descending), then username (ascending)
     active_players.sort(key=lambda x: (-x[1], x[0]))
 
-    # Build leaderboard
     lines = []
     current_rank = 1
     prev_score = None
@@ -184,7 +182,7 @@ def generate_question(question_type: str) -> dict[str, Any]:
     generators = {
         "Mathematics": generate_mathematics_question,
         "Roman Numerals": generate_roman_numerals_question,
-        "Usable IP Addresses of a Subnet": generate_usable_ip_addresses_question,
+        "Usable IP Addresses of a Subnet": generate_usable_addresses_question,
         "Network and Broadcast Address of a Subnet": generate_network_broadcast_question
     }
 
@@ -198,23 +196,112 @@ def generate_question(question_type: str) -> dict[str, Any]:
 
 
 def generate_question_answer(question_type: str, short_question: str) -> str:
-    # You need this to check if the player's answer is correct
-    # That will determine the 'feedback' in the RESULT message sent
-    # The answer depends on the question type
 
     solvers = {
         "Mathematics": solve_mathematics_question,
         "Roman Numerals": solve_roman_numerals_question,
-        "Usable IP Addresses of a Subnet": solve_usable_ip_addresses_question,
+        "Usable IP Addresses of a Subnet": solve_usable_addresses_question,
         "Network and Broadcast Address of a Subnet": solve_network_broadcast_question
     }
 
     return solvers[question_type](short_question)
 
+'''
+For some reason these functions are not importing
+theres probably a good reason
+but for now im just gonna put them here
+'''
+def solve_mathematics_question(expression):
+
+    tokens = expression.split()
+
+    result = int(tokens[0])
+
+    i = 1
+    while i < len(tokens):
+        operator = tokens[i]
+        operand = int(tokens[i + 1])
+
+        if operator == '+':
+            result += operand
+        elif operator == '-':
+            result -= operand
+
+        i += 2
+
+    return str(result)
+
+
+def solve_roman_numerals_question(roman):
+
+    val = {
+        'I': 1, 'V': 5, 'X': 10, 'L': 50,
+        'C': 100, 'D': 500, 'M': 1000
+    }
+
+    total = 0
+    prev_value = 0
+
+    # right to left
+    for char in reversed(roman):
+        if char not in val:
+            continue
+        value = val[char]
+        if value < prev_value:
+            # Subtractive
+            total -= value
+        else:
+            total += value
+        prev_value = value
+
+    return str(total)
+
+def solve_usable_addresses_question(cidr):
+
+    _, _, num_addresses = parse_cidr(cidr)
+    usable = num_addresses - 2
+    return str(usable)
+
+
+def solve_network_broadcast_question(cidr):
+
+    network_addr, broadcast_addr, _ = parse_cidr(cidr)
+    return f"{network_addr} and {broadcast_addr}"
+
+
+
+def parse_cidr(cidr):
+
+    try:
+        ip_str, prefix_str = cidr.split('/')
+    except ValueError:
+        print("Invalid cidr: " + cidr)
+        return
+    prefix_length = int(prefix_str)
+
+    ip_int = ip_to_int(ip_str)
+
+    mask = (0xFFFFFFFF << (32 - prefix_length)) & 0xFFFFFFFF
+
+    network_int = ip_int & mask
+
+    broadcast_int = network_int | (~mask & 0xFFFFFFFF)
+
+    num_addresses = 2 ** (32 - prefix_length)
+
+    return (int_to_ip(network_int), int_to_ip(broadcast_int), num_addresses)
+
+def ip_to_int(ip_str):
+    octets = ip_str.split('.')
+    return (int(octets[0]) << 24) + (int(octets[1]) << 16) + \
+           (int(octets[2]) << 8) + int(octets[3])
+
+def int_to_ip(ip_int):
+    return f"{(ip_int >> 24) & 0xFF}.{(ip_int >> 16) & 0xFF}." \
+           f"{(ip_int >> 8) & 0xFF}.{ip_int & 0xFF}"
+
 
 def start_game():
-    # Send a READY message
-
     ready_msg = {
         "message_type": "READY",
         "info": config["ready_info"].format(
@@ -226,24 +313,19 @@ def start_game():
 
 
 def start_round(question_number: int, question_type: str):
-    # Here's where you'd send a question
 
     global current_correct_answer
 
-    # Generate question
     question_data = generate_question(question_type)
     short_question = question_data["short_question"]
 
-    # Get correct answer
     current_correct_answer = generate_question_answer(question_type, short_question)
 
-    # Format question
     question_format = config["question_formats"][question_type]
     formatted_question = question_format.format(short_question)
 
     trivia_question = f"{config['question_word']} {question_number} ({question_type}):\n{formatted_question}"
 
-    # Send QUESTION
     question_msg = {
         "message_type": "QUESTION",
         "question_type": question_type,
@@ -253,15 +335,12 @@ def start_round(question_number: int, question_type: str):
     }
     send_to_all_players(question_msg)
 
-    # Wait for answers
     receive_answers()
 
 
 def end_round(is_last_round):
-    # Here's where you'd either send LEADERBOARD or FINISHED
 
     if not is_last_round:
-        # Send LEADERBOARD
         leaderboard_msg = {
             "message_type": "LEADERBOARD",
             "state": generate_leaderboard_state()
@@ -269,10 +348,7 @@ def end_round(is_last_round):
         send_to_all_players(leaderboard_msg)
         time.sleep(config["question_interval_seconds"])
     else:
-        # Send FINISHED
         state = generate_leaderboard_state()
-
-        # Get winners
         with players_lock:
             active_players = [
                 (data["username"], data["score"])
@@ -306,22 +382,29 @@ def main():
 
     global config
 
-    #Load and validate the config
-    if len(sys.argv) < 2 or sys.argv[1] != "--config":
-        print("server.py: Configuration not provided", file=sys.stderr)
-        sys.exit(1)
-
     if len(sys.argv) < 3:
         print("server.py: Configuration not provided", file=sys.stderr)
         sys.exit(1)
+    else:
+        if sys.argv[1] != "--config" and sys.argv[2] != "--config":
+            print("server.py: Configuration not provided", file=sys.stderr)
+            sys.exit(1)
+    '''
+    if len(sys.argv) < 3:
+        print("server.py: Configuration not provided", file=sys.stderr)
+        sys.exit(1)
+    '''
+
 
     config_path = sys.argv[2]
+
+    if not config_path.endswith(".json"):
+        print("server.py: Configuration not provided", file=sys.stderr)
 
     if not Path(config_path).exists():
         print(f"server.py: File {config_path} does not exist", file=sys.stderr)
         sys.exit(1)
 
-    #try to load the config
     try:
         with open(config_path) as f:
             config = json.load(f)
@@ -332,7 +415,6 @@ def main():
         print(f"server.py: Error loading config: {e}", file=sys.stderr)
         sys.exit(1)
 
-    # Validate config has required fields
     required_fields = [
         "port", "players", "question_types", "question_formats",
         "question_seconds", "question_interval_seconds", "ready_info",
@@ -345,8 +427,6 @@ def main():
             print(f"server.py: Missing required field '{field}' in config", file=sys.stderr)
             sys.exit(1)
 
-    # start hosting
-    # bind to port, listen for connections
     try:
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -356,7 +436,6 @@ def main():
         print(f"server.py: Binding to port {config['port']} was unsuccessful", file=sys.stderr)
         sys.exit(1)
 
-    # Wait for players to join
     def handle_client_connection(client_sock):
         try:
             data = client_sock.recv(4096)
@@ -375,12 +454,19 @@ def main():
             if not username.isalnum():
                 client_sock.close()
                 return
+            if not validate_username(username):
+                with players_lock:
+                    for sock in list(players.keys()):
+                        try:
+                            sock.close()
+                        except (socket.error, OSError):
+                            pass
+                sys.exit(0)
 
             add_player(client_sock, username)
         except Exception:
             client_sock.close()
 
-    # Accept players
     threads = []
     for _ in range(config["players"]):
         client_sock, addr = server_socket.accept()
@@ -388,17 +474,11 @@ def main():
         t.start()
         threads.append(t)
 
-    # Wait for all connection handler threads to finish
     for t in threads:
         t.join()
 
     start_game()
 
-    # for each question type:
-    # generate question
-    # send question to all connected players
-    # wait question_seconds OR for every player to answer
-    # finish the round
     num_questions = len(config["question_types"])
     for i, question_type in enumerate(config["question_types"]):
         question_number = i + 1
