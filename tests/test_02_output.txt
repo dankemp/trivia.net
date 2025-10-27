@@ -1,0 +1,2 @@
+{"message_type": "READY", "info": "Game starts in 1 seconds!"}
+{"message_type": "QUESTION", "question_type": "Mathematics", "trivia_question": "Question 1 (Mathematics):\nWhat is 77 + 1 - 15 + 20?", "short_question": "77 + 1 - 15 + 20", "time_limit": 5}
