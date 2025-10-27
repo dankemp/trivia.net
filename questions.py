@@ -269,7 +269,7 @@ def get_generator(question_type: str):
     generators = {
         "Mathematics": generate_mathematics_question,
         "Roman Numerals": generate_roman_numerals_question,
-        "Usable IP Addresses of a Subnet": generate_usable_ip_addresses_question,
+        "Usable IP Addresses of a Subnet": generate_usable_addresses_question,
         "Network and Broadcast Address of a Subnet": generate_network_broadcast_question
     }
     return generators[question_type]
