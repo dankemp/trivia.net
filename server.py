@@ -33,6 +33,11 @@ players_lock = threading.Lock()
 config = {}
 current_correct_answer = None
 
+import re
+
+def validate_username(username):
+    return bool(re.match(r'^[a-zA-Z0-9]+$', username))
+
 
 # Most of these functions have no arguments.
 # That is because the server scaffold is purely describing processes
@@ -491,7 +496,7 @@ def main():
             username = message["username"]
 
             # Check alphanumeric
-            if not username.isalnum():
+            if not validate_username(username):
                 with players_lock:
                     for sock in list(players.keys()):
                         try:
