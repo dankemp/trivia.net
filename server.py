@@ -217,67 +217,6 @@ def generate_question_answer(question_type: str, short_question: str) -> str:
 
     return solvers[question_type](short_question)
 
-'''
-def solve_mathematics_question(expression):
-
-    tokens = expression.split()
-
-    result = int(tokens[0])
-
-    i = 1
-    while i < len(tokens):
-        operator = tokens[i]
-        operand = int(tokens[i + 1])
-
-        if operator == '+':
-            result += operand
-        elif operator == '-':
-            result -= operand
-
-        i += 2
-
-    return str(result)
-
-
-def solve_roman_numerals_question(roman):
-
-    val = {
-        'I': 1, 'V': 5, 'X': 10, 'L': 50,
-        'C': 100, 'D': 500, 'M': 1000
-    }
-
-    total = 0
-    prev_value = 0
-
-    # Process right to left
-    for char in reversed(roman):
-        if char not in val:
-            continue
-        value = val[char]
-        if value < prev_value:
-            # Subtractive notation (like IV = 4)
-            total -= value
-        else:
-            total += value
-        prev_value = value
-
-    return str(total)
-
-
-def solve_usable_addresses_question(cidr):
-
-    _, _, num_addresses = parse_cidr(cidr)
-    # Usable addresses = total - 2 (network and broadcast)
-    usable = num_addresses - 2
-    return str(usable)
-
-def solve_network_broadcast_question(cidr):
-
-    network_addr, broadcast_addr, _ = parse_cidr(cidr)
-    return f"{network_addr} and {broadcast_addr}"
-'''
-
-
 
 def parse_cidr(cidr):
 
