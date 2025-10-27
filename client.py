@@ -171,7 +171,7 @@ def answer_question_ollama(question: str) -> str:
 def handle_command(command: str):
 
 
-    global client_socket, ConnectionAbortedError, connected, server_thread
+    global client_socket, connected, server_thread
 
     if command == "EXIT":
         if connected and client_socket:

@@ -137,7 +137,12 @@ def generate_usable_addresses_question():
 def solve_usable_addresses_question(cidr):
 
     _, _, num_addresses = parse_cidr(cidr)
-    usable = num_addresses - 2
+    if num_addresses == 1:
+        usable = 1
+    elif num_addresses == 2:
+        usable = 2
+    else:
+        usable = num_addresses - 2
     return str(usable)
 
 
