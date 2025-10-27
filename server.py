@@ -172,6 +172,9 @@ def generate_leaderboard_state() -> str:
             if not data["disconnected"]
         ]
 
+        if not active_players:
+            return ""
+
     active_players.sort(key=lambda x: (-x[1], x[0]))
 
     lines = []
@@ -331,8 +334,14 @@ def start_round(question_number: int, question_type: str):
     short_question = question_data["short_question"]
 
     current_correct_answer = generate_question_answer(question_type, short_question)
+    try:
+        question_format = config["question_formats"][question_type]
+    except KeyError:
+        print(f"DEBUG: Missing question format for '{question_type}'", file=sys.stderr)
+        print(f"DEBUG: Available formats: {list(config['question_formats'].keys())}", file=sys.stderr)
+        question_format = "{0}"  # Fallback format
 
-    question_format = config["question_formats"][question_type]
+
     formatted_question = question_format.format(short_question)
 
     trivia_question = f"{config['question_word']} {question_number} ({question_type}):\n{formatted_question}"
