@@ -26,6 +26,7 @@ current_correct_answer = None
 
 import re
 
+
 def validate_username(username):
     return bool(re.match(r'^[a-zA-Z0-9]+$', username))
 
@@ -69,21 +70,17 @@ def handle_player_answer(client_socket):
 
         if message.get("message_type") == "BYE":
             remove_player(client_socket)
-            return
-
-            '''
             result_msg = {
-                "message_type": "BYE",
-                
+                "message_type": "BYE"''',
+
                 "answer": is_correct,
                 "feedback": feedback
-                
+                '''
             }
 
             # Send only to this client
             json_string = json.dumps(result_msg) + "\n"
             client_socket.sendall(json_string.encode('utf-8'))
-            '''
 
         if message.get("message_type") == "ANSWER":
             player_answer = message["answer"]
@@ -214,7 +211,6 @@ def generate_question(question_type: str) -> dict[str, Any]:
 
 
 def generate_question_answer(question_type: str, short_question: str) -> str:
-
     solvers = {
         "Mathematics": solve_mathematics_question,
         "Roman Numerals": solve_roman_numerals_question,
@@ -224,13 +220,15 @@ def generate_question_answer(question_type: str, short_question: str) -> str:
 
     return solvers[question_type](short_question)
 
+
 '''
 For some reason these functions are not importing
 theres probably a good reason
 but for now im just gonna put them here
 '''
-def solve_mathematics_question(expression):
 
+
+def solve_mathematics_question(expression):
     tokens = expression.split()
 
     result = int(tokens[0])
@@ -251,7 +249,6 @@ def solve_mathematics_question(expression):
 
 
 def solve_roman_numerals_question(roman):
-
     val = {
         'I': 1, 'V': 5, 'X': 10, 'L': 50,
         'C': 100, 'D': 500, 'M': 1000
@@ -274,11 +271,11 @@ def solve_roman_numerals_question(roman):
 
     return str(total)
 
-def solve_usable_addresses_question(cidr):
 
+def solve_usable_addresses_question(cidr):
     _, _, num_addresses = parse_cidr(cidr)
 
-    #special cases for 32 and 31`
+    # special cases for 32 and 31`
     if num_addresses <= 2:
         usable = num_addresses
     else:
@@ -288,14 +285,11 @@ def solve_usable_addresses_question(cidr):
 
 
 def solve_network_broadcast_question(cidr):
-
     network_addr, broadcast_addr, _ = parse_cidr(cidr)
     return f"{network_addr} and {broadcast_addr}"
 
 
-
 def parse_cidr(cidr):
-
     try:
         ip_str, prefix_str = cidr.split('/')
     except ValueError:
@@ -315,10 +309,12 @@ def parse_cidr(cidr):
 
     return (int_to_ip(network_int), int_to_ip(broadcast_int), num_addresses)
 
+
 def ip_to_int(ip_str):
     octets = ip_str.split('.')
     return (int(octets[0]) << 24) + (int(octets[1]) << 16) + \
-           (int(octets[2]) << 8) + int(octets[3])
+        (int(octets[2]) << 8) + int(octets[3])
+
 
 def int_to_ip(ip_int):
     return f"{(ip_int >> 24) & 0xFF}.{(ip_int >> 16) & 0xFF}." \
@@ -337,7 +333,6 @@ def start_game():
 
 
 def start_round(question_number: int, question_type: str):
-
     global current_correct_answer
 
     question_data = generate_question(question_type)
@@ -350,7 +345,6 @@ def start_round(question_number: int, question_type: str):
         print(f"DEBUG: Missing question format for '{question_type}'", file=sys.stderr)
         print(f"DEBUG: Available formats: {list(config['question_formats'].keys())}", file=sys.stderr)
         question_format = "{0}"  # Fallback format
-
 
     formatted_question = question_format.format(short_question)
 
@@ -369,7 +363,6 @@ def start_round(question_number: int, question_type: str):
 
 
 def end_round(is_last_round):
-
     if not is_last_round:
         leaderboard_msg = {
             "message_type": "LEADERBOARD",
@@ -409,7 +402,6 @@ def end_round(is_last_round):
 
 
 def main():
-
     global config
 
     if len(sys.argv) < 3:
@@ -424,7 +416,6 @@ def main():
         print("server.py: Configuration not provided", file=sys.stderr)
         sys.exit(1)
     '''
-
 
     config_path = sys.argv[2]
 
@@ -481,11 +472,26 @@ def main():
                 return
 
             username = message["username"]
+            '''
+            # Check alphanumeric
+            if not username.isalnum():
+                client_sock.close()
+                return
+
+            if not validate_username(username):
+                with players_lock:
+                    for sock in list(players.keys()):
+                        try:
+                            sock.close()
+                        except (socket.error, OSError):
+                            pass
+                sys.exit(0)
+            '''
 
             add_player(client_sock, username)
         except Exception as e:
             print(f"DEBUG: Error in handle_client_connection: {e}", file=sys.stderr)
-            #print(f"Error adding player: {e}", file=sys.stderr)
+            # print(f"Error adding player: {e}", file=sys.stderr)
             client_sock.close()
 
     threads = []
