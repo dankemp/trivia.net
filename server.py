@@ -45,6 +45,7 @@ def add_player(client_socket, username):
             "answered": False,
             "disconnected": False
         }
+        print(f"DEBUG: Player '{username}' added. Total players: {len(players)}", file=sys.stderr)
 
 
 def remove_player(client_socket):
@@ -466,7 +467,10 @@ def main():
             '''
 
             add_player(client_sock, username)
-        except Exception:
+        except Exception as e:
+            print(f"Error adding player: {e}", file=sys.stderr)
+            import traceback
+            traceback.print_exc()
             client_sock.close()
 
     threads = []
