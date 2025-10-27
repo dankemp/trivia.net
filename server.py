@@ -17,16 +17,7 @@ from typing import Any
 
 import threading
 
-from questions import (
-    generate_mathematics_question,
-    generate_roman_numerals_question,
-    generate_usable_addresses_question,
-    generate_network_broadcast_question,
-    solve_mathematics_question,
-    solve_roman_numerals_question,
-    solve_usable_addresses_question,
-    solve_network_broadcast_question
-)
+from questions import *
 
 players = {}
 players_lock = threading.Lock()
