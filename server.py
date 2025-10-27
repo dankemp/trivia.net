@@ -303,6 +303,11 @@ def ip_to_int(ip_str):
     return (int(octets[0]) << 24) + (int(octets[1]) << 16) + \
            (int(octets[2]) << 8) + int(octets[3])
 
+def int_to_ip(ip_int):
+    """Convert 32-bit integer to IP address string."""
+    return f"{(ip_int >> 24) & 0xFF}.{(ip_int >> 16) & 0xFF}." \
+           f"{(ip_int >> 8) & 0xFF}.{ip_int & 0xFF}"
+
 
 def start_game():
     # Send a READY message
