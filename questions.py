@@ -134,11 +134,6 @@ def solve_roman_numerals_question(roman):
 
     return str(total)
 
-
-# ============================================================================
-# USABLE IP ADDRESSES QUESTIONS
-# ============================================================================
-
 def generate_usable_addresses_question():
 
     octets = [random.randint(0, 255) for _ in range(4)]
