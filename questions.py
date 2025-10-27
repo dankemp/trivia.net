@@ -191,7 +191,7 @@ def generate_usable_addresses_question():
     # Generate random IP and prefix length
     octets = [random.randint(0, 255) for _ in range(4)]
     ip = '.'.join(map(str, octets))
-    prefix_length = random.randint(8, 30)  # /8 to /30
+    prefix_length = random.randint(0, 32)  # /8 to /30
 
     return f"{ip}/{prefix_length}"
 
@@ -232,7 +232,7 @@ def generate_network_broadcast_question():
     """
     octets = [random.randint(0, 255) for _ in range(4)]
     ip = '.'.join(map(str, octets))
-    prefix_length = random.randint(8, 30)
+    prefix_length = random.randint(0, 32)
 
     return f"{ip}/{prefix_length}"
 
