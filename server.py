@@ -373,13 +373,8 @@ def main():
 
             # Check alphanumeric
             if not username.isalnum():
-                with players_lock:
-                    for sock in list(players.keys()):
-                        try:
-                            sock.close()
-                        except (socket.error, OSError):
-                            pass
-                sys.exit(0)
+                client_sock.close()
+                return
 
             add_player(client_sock, username)
         except Exception:
