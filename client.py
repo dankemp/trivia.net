@@ -27,7 +27,7 @@ config = {}
 client_socket = None
 connected: bool = False
 current_time_limit: int = 0
-current_question_type = None
+current_question_type = ""
 server_thread = None  # Store thread reference for proper joining
 
 
