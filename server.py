@@ -474,10 +474,11 @@ def main():
             username = message["username"]
 
             # Check alphanumeric
+            '''
             if not username.isalnum():
                 client_sock.close()
                 return
-            '''
+            
             if not validate_username(username):
                 with players_lock:
                     for sock in list(players.keys()):
