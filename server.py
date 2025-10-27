@@ -307,18 +307,18 @@ def main():
     global config
 
     #Load and validate the config
-    if len(sys.argv) < 2:
+    if len(sys.argv) < 3:
         print("server.py: Configuration not provided", file=sys.stderr)
         sys.exit(1)
     else:
         if sys.argv[1] != "--config" and sys.argv[2] != "--config":
             print("server.py: Configuration not provided", file=sys.stderr)
             sys.exit(1)
-
+    '''
     if len(sys.argv) < 3:
         print("server.py: Configuration not provided", file=sys.stderr)
         sys.exit(1)
-
+    '''
 
 
     config_path = sys.argv[2]
