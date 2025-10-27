@@ -101,7 +101,7 @@ def handle_player_answer(client_socket):
         with players_lock:
             if client_socket in players:
                 players[client_socket]["answered"] = True
-    except (socket.error, OSError, json.JSONDecodeError, KeyError):
+    except Exception:
         remove_player(client_socket)
 
 
@@ -382,7 +382,7 @@ def main():
                 sys.exit(0)
 
             add_player(client_sock, username)
-        except (socket.error, OSError, json.JSONDecodeError, KeyError):
+        except Exception:
             client_sock.close()
 
     # Accept players
