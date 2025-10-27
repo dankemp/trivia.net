@@ -10,6 +10,7 @@
 
 
 import json
+import multiprocessing
 import socket
 import sys
 import threading
@@ -111,8 +112,12 @@ def answer_question(
 
     elif client_mode == "ai":
         # Use Ollama
+        global current_time_limit
 
-        return answer_question_ollama(question)
+        try:
+            return answer_question_ollama(question)
+        except TimeoutError:
+            return ""
 
     return ""
 
@@ -130,9 +135,10 @@ def solve_question_auto(question_type: str, short_question: str) -> str:
 
 def answer_question_ollama(question: str) -> str:
 
+
+
     global config, current_time_limit
 
-    current_time_limit = 3
 
     try:
         ollama_config = config["ollama_config"]
