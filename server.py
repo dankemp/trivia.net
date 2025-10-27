@@ -297,6 +297,13 @@ def parse_cidr(cidr):
 
     return (int_to_ip(network_int), int_to_ip(broadcast_int), num_addresses)
 
+def ip_to_int(ip_str):
+    """Convert IP address string to 32-bit integer."""
+    octets = ip_str.split('.')
+    return (int(octets[0]) << 24) + (int(octets[1]) << 16) + \
+           (int(octets[2]) << 8) + int(octets[3])
+
+
 def start_game():
     # Send a READY message
 
