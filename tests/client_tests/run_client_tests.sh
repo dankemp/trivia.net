@@ -72,7 +72,7 @@ run_client_test() {
     fi
 
     # Run client with timeout (use -u for unbuffered output)
-    timeout $timeout_duration python3 -u client.py --config "$client_config" < "$input_file" > "$actual_output" 2>&1
+    /usr/bin/timeout $timeout_duration python3 -u client.py --config "$client_config" < "$input_file" > "$actual_output" 2>&1
     local client_exit=$?
 
     # Check output using the provided check function
@@ -259,7 +259,7 @@ EOF
 
 # Don't start a server for this test
 SERVER_PID=""
-timeout 3 python3 -u client.py --config "tests/client_tests/configs/client_manual.json" \
+/usr/bin/timeout 3 python3 -u client.py --config "tests/client_tests/configs/client_manual.json" \
     < "tests/client_tests/inputs/test_06_connect_fail.in" \
     > "tests/client_tests/actual/test_06.actual" 2>&1
 
