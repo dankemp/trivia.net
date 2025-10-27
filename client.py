@@ -12,6 +12,7 @@
 import json
 import socket
 import sys
+import time
 import threading
 import select
 import requests
@@ -26,6 +27,7 @@ client_socket = None
 connected: bool = False
 current_time_limit: int = 0
 current_question_type = None
+server_thread = None  # Store thread reference for proper joining
 
 
 def encode_message(message: dict[str, Any]) -> bytes:
@@ -201,11 +203,14 @@ def handle_command(command: str):
     # DISCONNECT
     # EXIT
 
-    global client_socket, ConnectionAbortedError, connected
+    global client_socket, ConnectionAbortedError, connected, server_thread
 
     if command == "EXIT":
         if connected and client_socket:
             disconnect(client_socket)
+            # Wait for server thread to finish processing messages
+            if server_thread and server_thread.is_alive():
+                server_thread.join(timeout=2)
         sys.exit(0)
 
     elif command.startswith("CONNECT "):
@@ -227,13 +232,21 @@ def handle_command(command: str):
                     }
                     send_message(client_socket, hi_msg)
 
-                    # then start server message handler threading
-                    server_thread = threading.Thread(target=handle_server_messages, daemon=True)
+                    # Start server message handler thread (NON-DAEMON for proper joining)
+                    server_thread = threading.Thread(target=handle_server_messages, daemon=False)
                     server_thread.start()
+
+                    # Give thread time to start and receive first messages
+                    # Wait longer than question_interval_seconds to ensure QUESTION arrives
+                    time.sleep(1.5)
 
     elif command == "DISCONNECT":
         if connected and client_socket:
             disconnect(client_socket)
+            # Wait for server thread to finish processing messages
+            if server_thread and server_thread.is_alive():
+                time.sleep(0.1)  # Give time for any pending messages
+                server_thread.join(timeout=2)
             sys.exit(0)
 
 
@@ -251,9 +264,11 @@ def handle_received_message(message: dict[str, Any]):
 
     if msg_type == "READY":
         print(message["info"])
+        sys.stdout.flush()
 
     elif msg_type == "QUESTION":
         print(message["trivia_question"])
+        sys.stdout.flush()
 
         # Store time limit and question type for answer function
         current_time_limit = message["time_limit"]
@@ -276,15 +291,21 @@ def handle_received_message(message: dict[str, Any]):
 
     elif msg_type == "RESULT":
         print(message["feedback"])
+        sys.stdout.flush()
 
     elif msg_type == "LEADERBOARD":
         print(message["state"])
+        sys.stdout.flush()
 
     elif msg_type == "FINISHED":
         print(message["final_standings"])
+        sys.stdout.flush()  # Ensure output is written
         connected = False
-        client_socket.close()
-        sys.exit(0)
+        try:
+            client_socket.close()
+        except:
+            pass
+        # Don't call sys.exit here - let the thread return gracefully
 
 
 def handle_server_messages():
@@ -297,16 +318,27 @@ def handle_server_messages():
             message = receive_message(client_socket)
 
             if not message:
+                # Connection lost or empty message
                 connected = False
-                client_socket.close()
-                sys.exit(0)
+                try:
+                    client_socket.close()
+                except:
+                    pass
+                sys.stdout.flush()  # Ensure all output is written
+                return  # Exit thread gracefully, don't call sys.exit!
 
             handle_received_message(message)
+            sys.stdout.flush()  # Flush after each message
 
-    except Exception:
+    except Exception as e:
+        # Handle exceptions without killing entire program
         if connected:
-            client_socket.close()
-        sys.exit(0)
+            try:
+                client_socket.close()
+            except:
+                pass
+        sys.stdout.flush()  # Ensure all output is written
+        return  # Exit thread gracefully, don't call sys.exit!
 
 
 def main():
@@ -349,8 +381,16 @@ def main():
 
     try:
         while True:
-            user_input = input()
-            handle_command(user_input)
+            # Only read commands when NOT connected
+            # When connected, the server thread handles everything including reading answers
+            if not connected:
+                user_input = input()
+                handle_command(user_input)
+            else:
+                # Wait for server thread to finish (game ends or disconnects)
+                if server_thread and server_thread.is_alive():
+                    server_thread.join()
+                # After thread finishes, continue reading commands
     except (EOFError, KeyboardInterrupt):
         if connected and client_socket:
             disconnect(client_socket)
