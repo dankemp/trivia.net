@@ -233,6 +233,44 @@ def solve_mathematics_question(expression):
     return str(result)
 
 
+def solve_roman_numerals_question(roman):
+
+    val = {
+        'I': 1, 'V': 5, 'X': 10, 'L': 50,
+        'C': 100, 'D': 500, 'M': 1000
+    }
+
+    total = 0
+    prev_value = 0
+
+    # Process right to left
+    for char in reversed(roman):
+        if char not in val:
+            continue
+        value = val[char]
+        if value < prev_value:
+            # Subtractive notation (like IV = 4)
+            total -= value
+        else:
+            total += value
+        prev_value = value
+
+    return str(total)
+
+
+def solve_usable_addresses_question(cidr):
+
+    _, _, num_addresses = parse_cidr(cidr)
+    # Usable addresses = total - 2 (network and broadcast)
+    usable = num_addresses - 2
+    return str(usable)
+
+def solve_network_broadcast_question(cidr):
+
+    network_addr, broadcast_addr, _ = parse_cidr(cidr)
+    return f"{network_addr} and {broadcast_addr}"
+
+
 def start_game():
     # Send a READY message
 
