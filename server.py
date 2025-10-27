@@ -16,7 +16,17 @@ from pathlib import Path
 from typing import Any
 
 import threading
-from questions import *
+
+from questions import (
+    generate_mathematics_question,
+    generate_roman_numerals_question,
+    generate_usable_addresses_question,
+    generate_network_broadcast_question,
+    solve_mathematics_question,
+    solve_roman_numerals_question,
+    solve_usable_addresses_question,
+    solve_network_broadcast_question
+)
 
 players = {}
 players_lock = threading.Lock()
@@ -211,7 +221,7 @@ def generate_question_answer(question_type: str, short_question: str) -> str:
 
     return solvers[question_type](short_question)
 
-
+'''
 def solve_mathematics_question(expression):
 
     tokens = expression.split()
@@ -269,6 +279,9 @@ def solve_network_broadcast_question(cidr):
 
     network_addr, broadcast_addr, _ = parse_cidr(cidr)
     return f"{network_addr} and {broadcast_addr}"
+'''
+
+
 
 def parse_cidr(cidr):
 
