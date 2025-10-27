@@ -11,14 +11,12 @@ Both server and client import from this module.
 import random
 
 def ip_to_int(ip_str):
-    """Convert IP address string to 32-bit integer."""
     octets = ip_str.split('.')
     return (int(octets[0]) << 24) + (int(octets[1]) << 16) + \
            (int(octets[2]) << 8) + int(octets[3])
 
 
 def int_to_ip(ip_int):
-    """Convert 32-bit integer to IP address string."""
     return f"{(ip_int >> 24) & 0xFF}.{(ip_int >> 16) & 0xFF}." \
            f"{(ip_int >> 8) & 0xFF}.{ip_int & 0xFF}"
 
@@ -32,20 +30,14 @@ def parse_cidr(cidr):
         return
     prefix_length = int(prefix_str)
 
-    # Convert IP to integer
     ip_int = ip_to_int(ip_str)
 
-    # Calculate subnet mask
-    # For /24: 11111111.11111111.11111111.00000000 = 0xFFFFFF00
     mask = (0xFFFFFFFF << (32 - prefix_length)) & 0xFFFFFFFF
 
-    # Calculate network address (IP AND mask)
     network_int = ip_int & mask
 
-    # Calculate broadcast address (network OR inverted mask)
     broadcast_int = network_int | (~mask & 0xFFFFFFFF)
 
-    # Total number of addresses in subnet
     num_addresses = 2 ** (32 - prefix_length)
 
     return (int_to_ip(network_int), int_to_ip(broadcast_int), num_addresses)
@@ -120,13 +112,13 @@ def solve_roman_numerals_question(roman):
     total = 0
     prev_value = 0
 
-    # Process right to left
+    # right to left
     for char in reversed(roman):
         if char not in val:
             continue
         value = val[char]
         if value < prev_value:
-            # Subtractive notation (like IV = 4)
+            # Subtractive
             total -= value
         else:
             total += value
@@ -145,7 +137,6 @@ def generate_usable_addresses_question():
 def solve_usable_addresses_question(cidr):
 
     _, _, num_addresses = parse_cidr(cidr)
-    # Usable addresses = total - 2 (network and broadcast)
     usable = num_addresses - 2
     return str(usable)
 
