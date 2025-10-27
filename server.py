@@ -469,8 +469,6 @@ def main():
             add_player(client_sock, username)
         except Exception as e:
             print(f"Error adding player: {e}", file=sys.stderr)
-            import traceback
-            traceback.print_exc()
             client_sock.close()
 
     threads = []
