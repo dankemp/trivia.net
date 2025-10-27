@@ -122,15 +122,17 @@ def answer_question(
 
 
 def solve_question_auto(question_type: str, short_question: str) -> str:
-
+    solver = get_solver(question_type)
+    '''
     solvers = {
         "Mathematics": solve_mathematics_question(short_question),
         "Roman Numerals": solve_roman_numerals_question(short_question),
         "Usable IP Addresses of a Subnet": solve_usable_addresses_question(short_question),
         "Network and Broadcast Address of a Subnet": solve_network_broadcast_question(short_question),
     }
+    '''
 
-    return solvers[question_type](short_question)
+    return solver(short_question)
 
 def answer_question_ollama(question: str) -> str:
 
@@ -212,9 +214,6 @@ def handle_command(command: str):
                     # Start server message handler thread (NON-DAEMON for proper joining)
                     server_thread = threading.Thread(target=handle_server_messages, daemon=False)
                     server_thread.start()
-                    time.sleep(0.1)
-
-                    time.sleep(1.5)
 
     elif command == "DISCONNECT":
         if connected and client_socket:
