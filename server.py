@@ -205,7 +205,7 @@ def generate_question_answer(question_type: str, short_question: str) -> str:
     solvers = {
         "Mathematics": solve_mathematics_question,
         "Roman Numerals": solve_roman_numerals_question,
-        "Usable IP Addresses of a Subnet": solve_usable_ip_addresses_question,
+        "Usable IP Addresses of a Subnet": solve_usable_addresses_question,
         "Network and Broadcast Address of a Subnet": solve_network_broadcast_question
     }
 

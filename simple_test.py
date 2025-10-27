@@ -1,8 +1,4 @@
-#!/usr/bin/env python3
-"""
-Simple test to verify server works
-Run this while server is running
-"""
+
 
 import socket
 import json
