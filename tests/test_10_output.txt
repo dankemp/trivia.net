@@ -1,1 +1,2 @@
-./run_tests_nc.sh: line 348: timeout: command not found
+{"message_type": "READY", "info": "Game starts in 1 seconds!"}
+{"message_type": "QUESTION", "question_type": "Mathematics", "trivia_question": "Question 1 (Mathematics):\nWhat is 85 - 61 - 71?", "short_question": "85 - 61 - 71", "time_limit": 5}
